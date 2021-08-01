@@ -39,6 +39,7 @@ class GC_Caching {
         $cache_page_path    = $path . $page_in_cache;
     
         if( !file_exists( $cache_page_path ) ) {
+            echo 'page exist in cache';
             $cached_content = ob_get_contents();
             $cached_content .= "</body></html>";
             ob_flush();
@@ -46,6 +47,12 @@ class GC_Caching {
             fwrite( $cache_file_handler, $cached_content );
             fclose( $cache_file_handler );
         }
+    }
+
+    /**
+     * Minifi HTML before caching
+     */
+    public function minification( $content ) {
     }
 
     /**
@@ -59,9 +66,11 @@ class GC_Caching {
         if( file_exists( $cache_page_path ) ) {
             $actual_name = base64_decode( $this->get_page_name() );
             
-            // this option can be managed by setting
-            // #138496#1bb6ce
-            echo "<script>console.info('%c Glue Cache: ', 'background-color:#17a9bf; color:#fff; border-radius: 2px;', '\'$actual_name\' served from the cache...');</script>";
+            $options = get_option( 'gc_settings' );
+            $showConsoleInfo = $options['gc_do_console'];
+            if( $showConsoleInfo ):
+                echo "<script>console.info('%c Glue Cache: ', 'background-color:#17a9bf; color:#fff; border-radius: 2px;', '\'$actual_name\' served from the cache...');</script>";
+            endif;
             
             echo file_get_contents( $cache_page_path );
             exit();

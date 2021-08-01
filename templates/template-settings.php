@@ -1,7 +1,4 @@
 <style>
-    .button_group {display: flex;flex-wrap: wrap;width: 13%;justify-content: space-between;}
-    .button-danger {color: #fff !important;background-color: #dc3545 !important;border-color: #dc3545 !important;}
-    .button-danger:hover {background-color: #c82333 !important;border-color: #bd2130 !important;}
 </style>
 <div class="wrap">
     <h1>
