@@ -6,9 +6,11 @@
 class GC_Caching {
 
     public function __construct() {
-        add_action( 'setup_theme',              [ $this, 'start_capture' ] );
-        add_action( 'wp_print_footer_scripts',  [ $this, 'generate_cache' ], 100 );
-        add_action( 'template_redirect',        [ $this, 'serve_cached_pages' ] );
+        if( !$this->pageException() ) {
+            add_action( 'setup_theme',              [ $this, 'start_capture' ] );
+            add_action( 'wp_print_footer_scripts',  [ $this, 'generate_cache' ], 100 );
+            add_action( 'template_redirect',        [ $this, 'serve_cached_pages' ] );
+        }
     }
 
     /**
@@ -39,20 +41,19 @@ class GC_Caching {
         $cache_page_path    = $path . $page_in_cache;
     
         if( !file_exists( $cache_page_path ) ) {
-            echo 'page exist in cache';
             $cached_content = ob_get_contents();
             $cached_content .= "</body></html>";
             ob_flush();
+
+            /**
+             * Compressing the page before caching
+             */
+            $content = $this->minification( $cached_content );
+
             $cache_file_handler = fopen( $cache_page_path, "w" );
-            fwrite( $cache_file_handler, $cached_content );
+            fwrite( $cache_file_handler, $content );
             fclose( $cache_file_handler );
         }
-    }
-
-    /**
-     * Minifi HTML before caching
-     */
-    public function minification( $content ) {
     }
 
     /**
@@ -62,16 +63,7 @@ class GC_Caching {
         $path               = ABSPATH . 'wp-content/gccache/';
         $accessed_page      = "cached-" . $this->get_page_name();
         $cache_page_path    = $path . $accessed_page;
-    
         if( file_exists( $cache_page_path ) ) {
-            $actual_name = base64_decode( $this->get_page_name() );
-            
-            $options = get_option( 'gc_settings' );
-            $showConsoleInfo = $options['gc_do_console'];
-            if( $showConsoleInfo ):
-                echo "<script>console.info('%c Glue Cache: ', 'background-color:#17a9bf; color:#fff; border-radius: 2px;', '\'$actual_name\' served from the cache...');</script>";
-            endif;
-            
             echo file_get_contents( $cache_page_path );
             exit();
         }
@@ -87,5 +79,42 @@ class GC_Caching {
         $url    = $scheme . '://' . $host . $uri;
         return base64_encode($url);
     }
+
+    /**
+     * Minifi HTML before caching
+     */
+    public function minification( $content ) {
+        $minifiedContent = preg_replace( '/>(\s)+/', '>', $content );
+        $minifiedContent = preg_replace( '/{(\s)*/', '{', $minifiedContent );
+        $minifiedContent = preg_replace( '/}(\s)*/', '}', $minifiedContent );
+        $minifiedContent = preg_replace( '/;(\s)*/', ';', $minifiedContent );
+        $minifiedContent = preg_replace( '/;(\s)*/', ';', $minifiedContent );
+        $minifiedContent = preg_replace( '/(",)(\s)*/', '",', $minifiedContent );
+        $minifiedContent = preg_replace( '/(\s)+}/', '}', $minifiedContent );
+        $minifiedContent = preg_replace( '/<!--[^\\[<>].*?(?<!!)-->/', '', $minifiedContent );
+        return $minifiedContent;
+    }
+
+    /**
+     * Manages the page not to be cached
+     */
+    public function pageException() {
+        global $pagenow;
+        if( is_admin() || is_network_admin() ) {
+            return true;
+        }
+        if( 'wp-login.php' === $pagenow ) {
+            return true;
+        }
+
+        $targetPages    = ['cart', 'checkout'];
+        $uriSegements   = explode( '/', $_SERVER['REQUEST_URI'] );
+        $uriSegements   = array_filter( $uriSegements );
+        $slug           = end( $uriSegements );
+        if( in_array( $slug, $targetPages) ) {
+            return true;
+        }
+    }
+
 }
 new GC_Caching();

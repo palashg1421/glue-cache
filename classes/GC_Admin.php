@@ -7,8 +7,8 @@ class GC_Admin {
     public function __construct() {
         add_action( 'admin_enqueue_scripts',    [ $this, 'scriptsForAdmin' ] );
         add_action( 'admin_menu',               [ $this, 'addMenuPages' ] );
-        add_action( 'init',                     [ $this, 'onSettingSave'] );
-        add_action( 'admin_bar_menu',           [ $this, 'addLinkToAdminBar' ], 100);
+        add_action( 'init',                     [ $this, 'purgeCacheFromAdminBar'] );
+        add_action( 'admin_bar_menu',           [ $this, 'addLinkToAdminBar' ], 100 );
     }
 
     public function scriptsForAdmin() {
@@ -18,8 +18,8 @@ class GC_Admin {
     public function addMenuPages() {
 
         add_menu_page(
-            __('Glue Cache', 'gluecache'),
-            __('Glue Cache', 'gluecache'),
+            __( 'Glue Cache', 'gluecache' ),
+            __( 'Glue Cache', 'gluecache' ),
             'administrator',
             'glue-cache',
             function(){
@@ -31,25 +31,7 @@ class GC_Admin {
         
     }
 
-    public function onSettingSave() {
-
-        if( isset( $_POST['saveGlueSettings'] ) ) {
-            if( $_REQUEST['_wpnonce'] && wp_verify_nonce( $_REQUEST['_wpnonce'], 'gluecache_nonce' ) ) {
-            
-                $data = [];
-                $data['gc_do_console'] = isset( $_POST['gc_do_console'] ) ? $_POST['gc_do_console'] : 0;
-                update_option( 'gc_settings', $data );
-                wp_redirect( admin_url() . 'admin.php?page=glue-cache&update=1' );
-                exit();
-            } else {
-                die('nonce error');
-            }
-        }
-        if( isset( $_POST['purgeGlueCache'] ) ) {
-            $this->purgeAllCache();
-            wp_redirect( admin_url() . 'admin.php?page=glue-cache&purge=1' );
-            exit();
-        }
+    public function purgeCacheFromAdminBar() {
         if( isset( $_GET['do-purge'] ) && ( 1 == $_GET['do-purge'] ) ) {
             $this->purgeAllCache();
             wp_redirect( $_SERVER['HTTP_REFERER'] );
@@ -58,19 +40,17 @@ class GC_Admin {
     }
 
     public function addLinkToAdminBar( $admin_bar ) {
-        if( !is_admin() ) {
-            $admin_bar->add_menu( [
-                'id'    => 'glue-cache',
-                'title' => "<span class='glue-cache-ab-icon-red'></span>" . __( 'Glue Cache', 'gluecache' ),
-                'href'  => ''
-            ] );
-            $admin_bar->add_menu( [
-                'id'        => 'purge-all-cache',
-                'parent'    => 'glue-cache',
-                'title'     => __( 'Purge All Cache', 'gluecache' ),
-                'href'      => admin_url() . '?page=glue-cache&do-purge=1'
-            ] );
-        }
+        $admin_bar->add_menu( [
+            'id'    => 'glue-cache',
+            'title' => "<span class='glue-cache-ab-icon-red'></span>" . __( 'Glue Cache', 'gluecache' ),
+            'href'  => ''
+        ] );
+        $admin_bar->add_menu( [
+            'id'        => 'purge-all-cache',
+            'parent'    => 'glue-cache',
+            'title'     => __( 'Purge All Cache', 'gluecache' ),
+            'href'      => admin_url() . '?page=glue-cache&do-purge=1'
+        ] );
     }
 
     public function purgeAllCache() {
