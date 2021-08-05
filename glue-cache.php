@@ -25,21 +25,22 @@
 if ( !defined( 'ABSPATH' ) )
     die( 'Invalid request.' );
 
+if( file_exists( __DIR__ . './vendor/autoload.php') ):
+    require_once __DIR__ . '/vendor/autoload.php';
+endif;
+
 /**
  * Plugin activation hook
  */
-register_activation_hook( __FILE__, function() {
-} );
+register_activation_hook( __FILE__, function() {} );
 
 /**
  * Plugin deactivation hook
  */
-register_deactivation_hook( __FILE__, function() {
-} );
+register_deactivation_hook( __FILE__, function() {} );
 
 /**
  * Include core classes
  */
-require 'classes/GC_Utility.php';
-require 'classes/GC_Caching.php';
-require 'classes/GC_Admin.php';
+new GC\GC_Caching;
+new GC\GC_Admin;

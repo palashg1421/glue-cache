@@ -1,0 +1,19 @@
+{
+    "name": "palash/glue-cache",
+    "description": "A light weight server side cache plugin",
+    "type": "project",
+    "license": "GPL2",
+    "authors": [
+        {
+            "name": "palashg1421",
+            "email": "palashgupta142@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "GC\\": "classes/"
+        }
+    }
+}

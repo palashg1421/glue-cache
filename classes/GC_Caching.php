@@ -3,6 +3,8 @@
  * Caching class, performs main task of caching.
  */
 
+namespace GC;
+
 class GC_Caching {
 
     public function __construct() {
@@ -77,7 +79,7 @@ class GC_Caching {
         $host	= $_SERVER['HTTP_HOST'];
         $uri	= $_SERVER['REQUEST_URI'];
         $url    = $scheme . '://' . $host . $uri;
-        return base64_encode($url);
+        return base64_encode( $url );
     }
 
     /**
@@ -117,4 +119,3 @@ class GC_Caching {
     }
 
 }
-new GC_Caching();
