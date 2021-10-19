@@ -66,6 +66,15 @@ class GC_Caching {
         $accessed_page      = "cached-" . $this->get_page_name();
         $cache_page_path    = $path . $accessed_page;
         if( file_exists( $cache_page_path ) ) {
+            
+            /**
+             * Show message on console if enable from settings
+             */
+            $settings = get_option( 'gc_settings' );
+            if( isset( $settings['show_console_msg'] ) && 1 == $settings['show_console_msg'] ) {
+                echo "<script>console.info('%c🗲Glue Cache Working:', 'color: #004085; background-color: #D1ECF1; border-radius: 4px; padding: 4px;',  'Served from cache...');</script>";
+            }
+
             echo file_get_contents( $cache_page_path );
             exit();
         }

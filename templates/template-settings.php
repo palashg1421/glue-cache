@@ -21,6 +21,23 @@
                             />
                         </td>
                     </tr>
+                    <tr>
+                        <th scope='row'>
+                            <label for="purge_on_deletion">
+                                <?php _e( 'Show message on console', 'gccache' ); ?>
+                            </label>
+                        </th>
+                        <td>
+                            <input
+                                type="checkbox"
+                                id="show_console_msg"
+                                name="show_console_msg"
+                                class='regular-text'
+                                value='1'
+                                <?php echo isset( $settings['show_console_msg'] ) ? 'checked="checked"' : '' ?>
+                            />
+                        </td>
+                    </tr>
                 </tbody>
             </table>
             <p>

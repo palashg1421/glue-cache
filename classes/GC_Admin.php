@@ -12,6 +12,7 @@ class GC_Admin {
         add_action( 'admin_menu',               [ $this, 'addMenuPages' ] );
         add_action( 'init',                     [ $this, 'actionsOnInit'] );
         add_action( 'admin_bar_menu',           [ $this, 'addLinkToAdminBar' ], 100 );
+        add_action( 'admin_notices',            [ $this, 'adminNotices'] );
     }
 
     /**
@@ -60,7 +61,8 @@ class GC_Admin {
         if( isset( $_POST['gc_save_setting'] ) ) {
             unset( $_POST['gc_save_setting'] );
             update_option( 'gc_settings', $_POST );
-            $url = admin_url( '?page=glue-cache&save=1' );
+            $url = admin_url( '?page=glue-cache' );
+            GC_Utility::setFlash( 'setting_saved', GC_Utility::getMessage('SETTING_SVD') );
             wp_redirect( $url );
             exit();
         }
@@ -101,6 +103,16 @@ class GC_Admin {
      * function to purge cache of specific page
      */
     public function purgePageCache( $url ) {
+    }
+
+    /**
+     * function to set admin notices
+     */
+    public function adminNotices() {
+        if( GC_Utility::hasFlash( 'setting_saved' ) ) {
+            $message = GC_Utility::getFlash( 'setting_saved' );
+            echo GC_Utility::getNoticeHtml( $message, 'success' );
+        }
     }
     
 }
