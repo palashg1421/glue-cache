@@ -8,6 +8,7 @@ namespace GC;
 class GC_Admin {
 
     public function __construct() {
+        @session_start();
         add_action( 'admin_enqueue_scripts',    [ $this, 'scriptsForAdmin' ] );
         add_action( 'admin_menu',               [ $this, 'addMenuPages' ] );
         add_action( 'init',                     [ $this, 'actionsOnInit'] );
