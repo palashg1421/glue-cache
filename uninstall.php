@@ -9,4 +9,5 @@
                 unlink ( $path );
             }
         }
+        rmdir( $dir );
     }

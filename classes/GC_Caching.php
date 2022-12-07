@@ -8,53 +8,55 @@ namespace GC;
 class GC_Caching {
 
     public function __construct() {
-        if( !$this->pageException() ) {
-            add_action( 'setup_theme',              [ $this, 'start_capture' ] );
-            add_action( 'wp_print_footer_scripts',  [ $this, 'generate_cache' ], 100 );
-            add_action( 'template_redirect',        [ $this, 'serve_cached_pages' ] );
-        }
+        add_action( 'setup_theme',              [ $this, 'start_capture' ] );
+        add_action( 'wp_print_footer_scripts',  [ $this, 'generate_cache' ], 100 );
+        add_action( 'template_redirect',        [ $this, 'serve_cached_pages' ] );
     }
 
     /**
      * Start recording the pages
      */
     public function start_capture() {
-        ob_start();
+        if( !$this->page_exception() ) {
+            ob_start();
+        }
     }
 
     /**
      * Generated the cache from recorded content
      */
     public function generate_cache() {
-        $path = ABSPATH . 'wp-content/gccache/';
-        
-        /**
-         * Check and create cache folder if not exists
-         */
-        if( !file_exists( $path ) ) {
-            mkdir( $path, 0777, true );
-        }
-
-        /**
-         * Create cache for the current page if not exist
-         */
-        $current_page       = $this->get_page_name();
-        $page_in_cache      = "cached-$current_page";
-        $cache_page_path    = $path . $page_in_cache;
-    
-        if( !file_exists( $cache_page_path ) ) {
-            $cached_content = ob_get_contents();
-            $cached_content .= "</body></html>";
-            ob_flush();
-
+        if( !$this->page_exception() ) {
+            $path = ABSPATH . 'wp-content/gccache/';
+            
             /**
-             * Compressing the page before caching
+             * Check and create cache folder if not exists
              */
-            $content = $this->minification( $cached_content );
-
-            $cache_file_handler = fopen( $cache_page_path, "w" );
-            fwrite( $cache_file_handler, $content );
-            fclose( $cache_file_handler );
+            if( !file_exists( $path ) ) {
+                mkdir( $path, 0777, true );
+            }
+    
+            /**
+             * Create cache for the current page if not exist
+             */
+            $current_page       = $this->get_page_name();
+            $page_in_cache      = "cached-$current_page";
+            $cache_page_path    = $path . $page_in_cache;
+        
+            if( !file_exists( $cache_page_path ) ) {
+                $cached_content = ob_get_contents();
+                $cached_content .= "</body></html>";
+                ob_flush();
+    
+                /**
+                 * Compressing the page before caching
+                 */
+                $content = $this->minification( $cached_content );
+    
+                $cache_file_handler = fopen( $cache_page_path, "w" );
+                fwrite( $cache_file_handler, $content );
+                fclose( $cache_file_handler );
+            }
         }
     }
 
@@ -62,21 +64,23 @@ class GC_Caching {
      * Check cache and serve the cached page if available
      */
     public function serve_cached_pages() {
-        $path               = ABSPATH . 'wp-content/gccache/';
-        $accessed_page      = "cached-" . $this->get_page_name();
-        $cache_page_path    = $path . $accessed_page;
-        if( file_exists( $cache_page_path ) ) {
-            
-            /**
-             * Show message on console if enable from settings
-             */
-            $settings = get_option( 'gc_settings' );
-            if( isset( $settings['show_console_msg'] ) && 1 == $settings['show_console_msg'] ) {
-                echo "<script>console.info('%c🗲Glue Cache Working:', 'color: #004085; background-color: #D1ECF1; border-radius: 4px; padding: 4px;',  'Served from cache...');</script>";
+        if( !$this->page_exception() ) {
+            $path               = ABSPATH . 'wp-content/gccache/';
+            $accessed_page      = "cached-" . $this->get_page_name();
+            $cache_page_path    = $path . $accessed_page;
+            if( file_exists( $cache_page_path ) ) {
+                
+                /**
+                 * Show message on console if enable from settings
+                 */
+                $settings = get_option( 'gc_settings' );
+                if( isset( $settings['show_console_msg'] ) && 1 == $settings['show_console_msg'] ) {
+                    echo "<script>console.info('%c🗲Glue Cache Working:', 'color: #004085; background-color: #D1ECF1; border-radius: 4px; padding: 4px;',  'Served from cache...');</script>";
+                }
+    
+                echo file_get_contents( $cache_page_path );
+                exit();
             }
-
-            echo file_get_contents( $cache_page_path );
-            exit();
         }
     }
 
@@ -109,8 +113,13 @@ class GC_Caching {
     /**
      * Manages the page not to be cached
      */
-    public function pageException() {
+    public function page_exception() {
         global $pagenow;
+
+        if( current_user_can( 'manage_options' ) ) {
+            return true;
+        }
+
         if( is_admin() || is_network_admin() ) {
             return true;
         }

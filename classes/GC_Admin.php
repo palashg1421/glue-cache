@@ -47,7 +47,7 @@ class GC_Admin {
     public function actionsOnInit() {
 
         /**
-         * prge cache from admin bar
+         * purge cache from admin bar
          */
         if( isset( $_GET['do-purge'] ) && ( 1 == $_GET['do-purge'] ) ) {
             $this->purgeAllCache();
