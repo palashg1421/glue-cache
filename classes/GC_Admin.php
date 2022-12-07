@@ -112,7 +112,7 @@ class GC_Admin {
     public function adminNotices() {
         if( GC_Utility::hasFlash( 'setting_saved' ) ) {
             $message = GC_Utility::getFlash( 'setting_saved' );
-            echo GC_Utility::getNoticeHtml( $message, 'success' );
+            echo GC_Utility::getNoticeHtml( $message, 'success', true );
         }
     }
     

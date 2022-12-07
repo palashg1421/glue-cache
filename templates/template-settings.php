@@ -41,7 +41,13 @@
                 </tbody>
             </table>
             <p>
-                <input type="submit" name="gc_save_setting" id="submit" class="button button-primary" value="Save Changes">
+                <input
+                    type="submit"
+                    name="gc_save_setting"
+                    id="submit"
+                    class="button button-primary"
+                    value="Save Changes"
+                />
             </p>
         </form>
     </div>
